@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Azure TTS</title>
+</head>
+<body>
+    <h1>Azure Text-to-Speech</h1>
+
+    <form id="ttsForm">
+        <label>Podaj tekst do zamiany na mowę:</label><br>
+        <textarea name="text" rows="5" cols="50" required></textarea><br><br>
+        <button type="submit">Generuj mowę</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('ttsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = 'Generowanie...';
+
+            try {
+                const response = await fetch('/synthesize', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const audioBlob = await response.blob();
+                    const audioUrl = URL.createObjectURL(audioBlob);
+
+                    resultDiv.innerHTML = `
+                        <h3>Gotowe!</h3>
+                        <audio controls autoplay>
+                            <source src="${audioUrl}" type="audio/wav">
+                        </audio>
+                    `;
+                } else {
+                    resultDiv.innerHTML = 'Błąd generowania mowy';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = 'Błąd: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>

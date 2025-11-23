@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    return render_template('flask1.html')
+    return render_template('flask1.1.html')
 
 @app.route('/synthesize', methods=['POST'])
 def synthesize():
