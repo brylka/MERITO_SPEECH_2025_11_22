@@ -30,7 +30,7 @@ def ask():
 
     answer = response.choices[0].message.content
 
-    return answer
+    return render_template('flask2.html', question=user_prompt, answer=answer)
 
 
 
