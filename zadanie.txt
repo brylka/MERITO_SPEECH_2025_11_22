@@ -1,7 +1,10 @@
 Przepływ danych:
-1. Widok pozwala na wprowadzenie tekstu
-2. Przesyłamy tekst do backendu
-3. Backend przesyła tekst jako prompt do api chatGPT
+0. Widok pozwala na nagranie przemowy.
+# 1. Widok pozwala na wprowadzenie tekstu
+1. Przesyłamy nagranie do backendu
+# 2. Przesyłamy tekst do backendu
+2. Backend zmienia na format wav -> wysyła do Speech -> odbiera tekst
+3. Backend przesyła tekst jako prompt do api ChatGPT
 4. Zwrócona odpowiedź przekazywana jest do Speech
 5. Zwrócony wav jest przekazywany do frontendu (przeglądarki) - plik zapisywany
 6. Druga wersja - plik jest odtwarzany w tym samym oknie na dole
