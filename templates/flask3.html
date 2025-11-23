@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Azure STT - webm/opus test</title>
+</head>
+<body>
+    <h1>Azure Speech-to-Text (raw webm/opus)</h1>
+
+    <button id="recordBtn">Nagrywaj</button>
+    <button id="sendBtn" disabled>Wyślij do Azure</button>
+
+    <div id="status"></div>
+    <div id="result"></div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioBlob = null;
+
+        const recordBtn = document.getElementById('recordBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const status = document.getElementById('status');
+        const result = document.getElementById('result');
+
+        // Inicjalizacja nagrywania
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = (e) => {
+                    audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    audioChunks = [];
+                    sendBtn.disabled = false;
+                    status.textContent = 'Nagranie gotowe';
+                };
+            })
+            .catch(err => {
+                status.textContent = 'Błąd dostępu do mikrofonu: ' + err;
+            });
+
+        // Nagrywanie
+        recordBtn.addEventListener('click', () => {
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recordBtn.textContent = 'Nagrywaj';
+            } else {
+                audioChunks = [];
+                audioBlob = null;
+                sendBtn.disabled = true;
+                mediaRecorder.start();
+                recordBtn.textContent = 'Stop';
+                status.textContent = 'Nagrywanie...';
+                result.textContent = '';
+            }
+        });
+
+        // Wysyłanie
+        sendBtn.addEventListener('click', async () => {
+            if (!audioBlob) return;
+
+            status.textContent = 'Wysyłanie do Azure...';
+            sendBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'audio.webm');
+
+            try {
+                const response = await fetch('/recognize', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    result.textContent = 'Rozpoznany tekst: ' + data.text;
+                    status.textContent = 'Gotowe!';
+                } else {
+                    result.textContent = 'Błąd: ' + data.error;
+                    status.textContent = 'Błąd rozpoznawania';
+                }
+            } catch (error) {
+                result.textContent = 'Błąd: ' + error.message;
+                status.textContent = 'Błąd komunikacji';
+            } finally {
+                sendBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
