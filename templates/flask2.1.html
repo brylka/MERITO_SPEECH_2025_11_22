@@ -8,6 +8,7 @@
     <h1>ChatGPT</h1>
 
     <form action="/ask" method="POST">
+        <input type="hidden" name="history" value='{{ history|default("[]") }}'>
         <label>Twoje pytanie: </label><br>
         <textarea name="question" rows="5" cols="50" required></textarea><br>
         <button type="submit">Wyślij</button>

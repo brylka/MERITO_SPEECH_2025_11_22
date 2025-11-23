@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import json
 
 # Pobranie klucza OpenAI
 load_dotenv()
@@ -22,15 +23,24 @@ def hello():
 def ask():
     user_prompt = request.form.get('question')
 
+    conversation_history_json = request.form.get('history', '[]')
+    conversation_history = json.loads(conversation_history_json)
+
+    conversation_history.append({"role": "user", "content": user_prompt})
+
     response = client.chat.completions.create(
         model=model,
-        messages=[{"role": "user", "content": user_prompt}],
+        messages=conversation_history,
         temperature=0.7
     )
 
     answer = response.choices[0].message.content
 
-    return render_template('flask2.1.html', question=user_prompt, answer=answer)
+    conversation_history.append({"role": "assistant", "content": answer})
+
+    history_json = json.dumps(conversation_history)
+
+    return render_template('flask2.1.html', question=user_prompt, answer=answer, history=history_json)
 
 
 
